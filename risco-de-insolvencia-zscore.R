@@ -1,3 +1,4 @@
+options(scipen = 9999)
 library(readxl)
 library(Hmisc)
 library(dplyr)
@@ -28,19 +29,19 @@ library(wesanderson)
 #incluindo a base de dados
 #-----------------------------------------------
 
-dados <- read_excel("C:/Users/allis/Desktop/Pós-dissertação/Dados/Dissertacao/Dados_PROFESSOR/dados.xlsx")
+dados <- read_excel("C:/Users/allis/Desktop/dados.xlsx")
 
-dadosROA <- read_excel("C:/Users/allis/Desktop/Pós-dissertação/Dados/Dissertacao/Dados_PROFESSOR/dados_ROA.xlsx")
+dadosROA <- read_excel("C:/Users/allis/Desktop/dados_ROA.xlsx")
 
 
 #-----------------------------------------------
-#tornando os dados não numéricos em numéricos
+#tornando os dados nÃ£o numÃ©ricos em numÃ©ricos
 #-----------------------------------------------
 
 dados[,c(3:16)]<- sapply(dados[, c(3:16)], as.numeric)
 
 #-----------------------------------------------
-#transformando dados dos denominadores que são 0 em NA, para evitar problemas de (inf;-inf)
+#transformando dados dos denominadores que sÃ£o 0 em NA, para evitar problemas de (inf;-inf)
 #-----------------------------------------------
 
 dados$ATIVTOT[dados$ATIVTOT==0]=NA
@@ -52,7 +53,7 @@ dados$PASSC[dados$PASSC==0]=NA
 dadosROA$ATIVTOT[dadosROA$ATIVTOT==0]=NA
 
 #-----------------------------------------------
-#calculando variáveis e adicionando às matrizes
+#calculando variÃ¡veis e adicionando Ã s matrizes
 #-----------------------------------------------
 
 #-----------------------------------------------
@@ -77,7 +78,7 @@ CEE=VA/dados$PATLIQ
 dados["VAIC"]=HCE+SCE+CEE
 
 #-----------------------------------------------
-# Incluindo as demais variáveis
+# Incluindo as demais variÃ¡veis
 #-----------------------------------------------
 
 dados["TAM"]=log(dados$ATIVTOT)
@@ -91,7 +92,7 @@ dados["FCV"]=dados$FLU_CX/dados$REC_LIQ
 dadosROA["ROA"]=dadosROA$LUCLIQ/dadosROA$ATIVTOT
 
 #-----------------------------------------------  
-#selecionando as variáveis de interesse em uma nova tabela
+#selecionando as variÃ¡veis de interesse em uma nova tabela
 #-----------------------------------------------
 
 mydados=dplyr::select(dados, c(1:2,29:37,17:28))
@@ -112,7 +113,7 @@ mydados=mydados[order(mydados$PREFIXO, mydados$TRIM, decreasing=c(F, F)),]
 mydadosROA=mydadosROA[order(mydadosROA$PREFIXO, mydadosROA$TRIM, decreasing=c(F, F)),]
 
 #-----------------------------------------------
-#trabalhando com o desvio padrão móvel do ROA (12 trimestres) como medida de risco.
+#trabalhando com o desvio padrÃ£o mÃ³vel do ROA (12 trimestres) como medida de risco.
 #-----------------------------------------------
 
 dadosROA$ROA[is.na(dadosROA$ROA)==T]=0
@@ -146,13 +147,13 @@ droa=dadosROA[,c(1:2,6)]
 mydata=left_join(mydados, droa, by=c("PREFIXO","TRIM"))
 
 #-----------------------------------------------
-#Omitindo observações com dados faltantes
+#Omitindo observaÃ§Ãµes com dados faltantes
 #-----------------------------------------------
 
 mydata=na.omit(mydata)
 
 #-----------------------------------------------
-#Winsorização
+#WinsorizaÃ§Ã£o
 #-----------------------------------------------
 
 par(mfrow=c(2,5))
@@ -168,27 +169,27 @@ mydata11 = mydata%>% mutate(VAICw=winsor(mydata$VAIC, trim=0.11)) %>% mutate(TAM
 hist(mydata11$VAICw,xlab="VAIC",main="");hist(mydata11$TAMw,xlab="TAM",main="");hist(mydata11$ROAw,xlab="ROA",main="");hist(mydata11$ALAVw,xlab="ALAV",main="");hist(mydata11$LIQCw,xlab="LIQC",main="");hist(mydata11$GIROw,xlab="GIRO",main="");hist(mydata11$CGATw,xlab="CGAT",main="");hist(mydata11$FCDTw,xlab="FCDT",main="");hist(mydata11$FCVw,xlab="FCV",main="")
 
 #----------------------------------------------------------------------------------------------
-# Winsorização escolhida de 5%, por ser o mais tolerado na literatura
+# WinsorizaÃ§Ã£o escolhida de 5%, por ser o mais tolerado na literatura
 #----------------------------------------------------------------------------------------------
 
 mydata=mydata5
 
 #----------------------------------------------------------------------------------------------
-# definindo (1) maior e (0) menor risco de insolvência com base no Z-Score
-# O ponto de corte é dado pelo próprio modelo de Altman 
+# definindo (1) maior e (0) menor risco de insolvÃªncia com base no Z-Score
+# O ponto de corte Ã© dado pelo prÃ³prio modelo de Altman 
 #----------------------------------------------------------------------------------------------
 
 mydata$dZSCORE[mydata$ZSCOREw>=4.15]=0
 mydata$dZSCORE[mydata$ZSCOREw<4.15]=1
 
 #-----------------------------------------------
-#selecionando as variáveis winsorizadas e dummy ZSCORE
+#selecionando as variÃ¡veis winsorizadas e dummy ZSCORE
 #-----------------------------------------------
 
 mydatafin=dplyr::select(mydata, c(1:2, 25:36))
 
 #-----------------------------------------------
-#   SEPARAÇÃO - TREINAMENTO/TESTE DPROA
+#   SEPARAÃ‡ÃƒO - TREINAMENTO/TESTE DPROA
 #-----------------------------------------------
 set.seed(1)
 divisao=sample.split(mydatafin$dZSCORE,SplitRatio = 0.75)
@@ -198,7 +199,7 @@ treinamento$dZSCORE=as.factor(treinamento$dZSCORE);teste$dZSCORE=as.factor(teste
 mettreinamento=treinamento[,c(3:11,14)];metteste=teste[,c(3:11,14)];
 
 #-----------------------------------------------
-#APLICAÇÃO KNN (K-Nearest Neighbor, ou K Vizinhos Mais Próximos)
+#APLICAÃ‡ÃƒO KNN (K-Nearest Neighbor, ou K Vizinhos Mais PrÃ³ximos)
 #-----------------------------------------------
 
 ctrl <- trainControl(method="repeatedcv",
@@ -225,7 +226,7 @@ plot.roc(rocobject)
 auc(rocobject)
 
 #-----------------------------------------------
-#     OUTRAS MÉTRICAS DE AVALIAÇÃO - KNN
+#     OUTRAS MÃ‰TRICAS DE AVALIAÃ‡ÃƒO - KNN
 #-----------------------------------------------
 
 predicttest=as.numeric(knnclass);
@@ -235,7 +236,7 @@ MAE(predicttest,original)
 RMSE(predicttest,original)
 
 #-----------------------------------------------
-#                 APLICAÇÃO - Naive bayes
+#                 APLICAÃ‡ÃƒO - Naive bayes
 #-----------------------------------------------
 
 set.seed(1)
@@ -259,7 +260,7 @@ rocobject=roc(metteste$dZSCORE, nbclassprob[,2])
 plot.roc(rocobject)
 
 #-----------------------------------------------
-#      OUTRAS MÉTRICAS DE AVALIAÇÃO - Naive Bayes
+#      OUTRAS MÃ‰TRICAS DE AVALIAÃ‡ÃƒO - Naive Bayes
 #-----------------------------------------------
 
 auc(rocobject)
@@ -271,7 +272,7 @@ MAE(predicttest,original)
 RMSE(predicttest,original)
 
 #-----------------------------------------------
-#                 APLICAÇÃO - Logit
+#                 APLICAÃ‡ÃƒO - Logit
 #-----------------------------------------------
 set.seed(1)
 fitlogit=glm(dZSCORE ~ ., data=mettreinamento, family="binomial")
@@ -289,7 +290,7 @@ logitrocobject=roc(metteste$dZSCORE, logitclassprob[,2])
 plot.roc(logitrocobject)
 
 #-----------------------------------------------
-#      OUTRAS MÉTRICAS DE AVALIAÇÃO - Logit
+#      OUTRAS MÃ‰TRICAS DE AVALIAÃ‡ÃƒO - Logit
 #-----------------------------------------------
 
 plot(varImp(Fitlogit))
@@ -303,7 +304,7 @@ MAE(predicttest,original)
 RMSE(predicttest,original)
 
 #-----------------------------------------------
-#                 APLICAÇÃO - Random Forest
+#                 APLICAÃ‡ÃƒO - Random Forest
 #-----------------------------------------------
 set.seed(1)
 ctrl=trainControl(method="cv",
@@ -326,7 +327,7 @@ plot.roc(RFrocobject)
 plot(varImp(FitRF))
 
 #-----------------------------------------------
-#      OUTRAS MÉTRICAS DE AVALIAÇÃO - Random Forest
+#      OUTRAS MÃ‰TRICAS DE AVALIAÃ‡ÃƒO - Random Forest
 #-----------------------------------------------
 
 auc(RFrocobject)
@@ -338,7 +339,7 @@ MAE(predicttest,original)
 RMSE(predicttest,original)
 
 #-----------------------------------------------
-#           APLICAÇÃO - Support Vector Machines
+#           APLICAÃ‡ÃƒO - Support Vector Machines
 #-----------------------------------------------
 
 #-----------------------------------------------
@@ -353,7 +354,7 @@ SVMrocobject=roc(metteste$dZSCORE,as.numeric(SVMclassprobradial))
 plot.roc(SVMrocobject)
 
 #-----------------------------------------------
-#      OUTRAS MÉTRICAS DE AVALIAÇÃO - SVM Radial
+#      OUTRAS MÃ‰TRICAS DE AVALIAÃ‡ÃƒO - SVM Radial
 #-----------------------------------------------
 
 auc(SVMrocobject)
@@ -376,7 +377,7 @@ SVMrocobject=roc(metteste$dZSCORE,as.numeric(SVMclassprobpolinomial))
 plot.roc(SVMrocobject)
 
 #-----------------------------------------------
-#      OUTRAS MÉTRICAS DE AVALIAÇÃO - SVM Polinomial
+#      OUTRAS MÃ‰TRICAS DE AVALIAÃ‡ÃƒO - SVM Polinomial
 #-----------------------------------------------
 
 auc(SVMrocobject)
@@ -399,7 +400,7 @@ SVMrocobject=roc(metteste$dZSCORE,as.numeric(SVMclassproblinear))
 plot.roc(SVMrocobject)
 
 #-----------------------------------------------
-#      OUTRAS MÉTRICAS DE AVALIAÇÃO - SVM Linear
+#      OUTRAS MÃ‰TRICAS DE AVALIAÃ‡ÃƒO - SVM Linear
 #-----------------------------------------------
 
 auc(SVMrocobject)
@@ -411,7 +412,7 @@ MAE(predicttest,original)
 RMSE(predicttest,original)
 
 #-----------------------------------------------
-#           APLICAÇÃO - Bagged Model
+#           APLICAÃ‡ÃƒO - Bagged Model
 #-----------------------------------------------
 
 set.seed(1)
@@ -436,7 +437,7 @@ baggedrocobject=roc(metteste$dZSCORE, baggedclassprob[,2])
 plot.roc(baggedrocobject)
 
 #-----------------------------------------------
-#      OUTRAS MÉTRICAS DE AVALIAÇÃO - Bagged Model
+#      OUTRAS MÃ‰TRICAS DE AVALIAÃ‡ÃƒO - Bagged Model
 #-----------------------------------------------
 
 auc(baggedrocobject)
@@ -448,7 +449,7 @@ MAE(predicttest,original)
 RMSE(predicttest,original)
 
 #-----------------------------------------------
-#           APLICAÇÃO - boosted trees
+#           APLICAÃ‡ÃƒO - boosted trees
 #-----------------------------------------------
 set.seed(1)
 tc = trainControl(method = "cv", 
@@ -466,7 +467,7 @@ boostedrocobject=roc(metteste$dZSCORE, boostedclassprob[,2])
 plot.roc(boostedrocobject)
 
 #-----------------------------------------------
-#      OUTRAS MÉTRICAS DE AVALIAÇÃO - boosted trees
+#      OUTRAS MÃ‰TRICAS DE AVALIAÃ‡ÃƒO - boosted trees
 #-----------------------------------------------
 
 auc(boostedrocobject)
@@ -478,7 +479,7 @@ MAE(predicttest,original)
 RMSE(predicttest,original)
 
 #-----------------------------------------------
-#         COMPARAÇÃO DE MODELOS COM O ROC
+#         COMPARAÃ‡ÃƒO DE MODELOS COM O ROC
 #-----------------------------------------------
 
 # List of predictions
