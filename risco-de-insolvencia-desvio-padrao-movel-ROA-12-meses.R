@@ -29,19 +29,19 @@ library(wesanderson)
 #incluindo a base de dados
 #-----------------------------------------------
 
-dados <- read_excel("C:/Users/Admin/Desktop/DissertaÁ„o - Vers„o Final/Dados_PROFESSOR/dados.xlsx")
+dados <- read_excel("C:/Users/Admin/Desktop/dados.xlsx")
 
 
-dadosROA <- read_excel("C:/Users/Admin/Desktop/DissertaÁ„o - Vers„o Final/Dados_PROFESSOR/dados_ROA.xlsx")
+dadosROA <- read_excel("C:/Users/Admin/Desktop/dados_ROA.xlsx")
 
 #-----------------------------------------------
-#tornando os dados n„o numÈricos em numÈricos
+#tornando os dados n√£o num√©ricos em num√©ricos
 #-----------------------------------------------
 
 dados[,c(3:16)]<- sapply(dados[, c(3:16)], as.numeric)
 
 #-----------------------------------------------
-#transformando dados dos denominadores que s„o 0 em NA, para evitar problemas de (inf;-inf)
+#transformando dados dos denominadores que s√£o 0 em NA, para evitar problemas de (inf;-inf)
 #-----------------------------------------------
 
 dados$ATIVTOT[dados$ATIVTOT==0]=NA
@@ -53,7 +53,7 @@ dados$PASSC[dados$PASSC==0]=NA
 dadosROA$ATIVTOT[dadosROA$ATIVTOT==0]=NA
 
 #-----------------------------------------------
-#calculando vari·veis e adicionando ‡s matrizes
+#calculando vari√°veis e adicionando √†s matrizes
 #-----------------------------------------------
 
 #-----------------------------------------------
@@ -78,7 +78,7 @@ CEE=VA/dados$PATLIQ
 dados["VAIC"]=HCE+SCE+CEE
 
 #-----------------------------------------------
-# Incluindo as demais vari·veis
+# Incluindo as demais vari√°veis
 #-----------------------------------------------
 
 dados["TAM"]=log(dados$ATIVTOT)
@@ -92,7 +92,7 @@ dados["FCV"]=dados$FLU_CX/dados$REC_LIQ
 dadosROA["ROA"]=dadosROA$LUCLIQ/dadosROA$ATIVTOT
 
 #-----------------------------------------------  
-#selecionando as vari·veis de interesse em uma nova tabela
+#selecionando as vari√°veis de interesse em uma nova tabela
 #-----------------------------------------------
 
 mydados=dplyr::select(dados, c(1:2,29:37,17:28))
@@ -113,7 +113,7 @@ mydados=mydados[order(mydados$PREFIXO, mydados$TRIM, decreasing=c(F, F)),]
 mydadosROA=mydadosROA[order(mydadosROA$PREFIXO, mydadosROA$TRIM, decreasing=c(F, F)),]
 
 #-----------------------------------------------
-#trabalhando com o desvio padr„o mÛvel do ROA (12 trimestres) como medida de risco.
+#trabalhando com o desvio padr√£o m√≥vel do ROA (12 trimestres) como medida de risco.
 #-----------------------------------------------
 
 dadosROA$ROA[is.na(dadosROA$ROA)==T]=0
@@ -147,13 +147,13 @@ droa=dadosROA[,c(1:2,6)]
 mydata=left_join(mydados, droa, by=c("PREFIXO","TRIM"))
 
 #-----------------------------------------------
-#Omitindo observaÁıes com dados faltantes
+#Omitindo observa√ß√µes com dados faltantes
 #-----------------------------------------------
 
 mydata=na.omit(mydata)
 
 #-----------------------------------------------
-#WinsorizaÁ„o
+#Winsoriza√ß√£o
 #-----------------------------------------------
 
 par(mfrow=c(2,5))
@@ -169,27 +169,27 @@ mydata11 = mydata%>% mutate(VAICw=winsor(mydata$VAIC, trim=0.11)) %>% mutate(TAM
 hist(mydata11$VAICw,xlab="VAIC",main="");hist(mydata11$TAMw,xlab="TAM",main="");hist(mydata11$ROAw,xlab="ROA",main="");hist(mydata11$ALAVw,xlab="ALAV",main="");hist(mydata11$LIQCw,xlab="LIQC",main="");hist(mydata11$GIROw,xlab="GIRO",main="");hist(mydata11$CGATw,xlab="CGAT",main="");hist(mydata11$FCDTw,xlab="FCDT",main="");hist(mydata11$FCVw,xlab="FCV",main="")
 
 #----------------------------------------------------------------------------------------------
-# WinsorizaÁ„o escolhida de 5%, por ser o mais tolerado na literatura
+# Winsoriza√ß√£o escolhida de 5%, por ser o mais tolerado na literatura
 #----------------------------------------------------------------------------------------------
 
 mydata=mydata5
 
 #----------------------------------------------------------------------------------------------
-# definindo (1) maior e (0) menor risco de insolvÍncia com base no Z-Score
-# O ponto de corte È dado pelo prÛprio modelo de Altman (2005)
+# definindo (1) maior e (0) menor risco de insolv√™ncia com base no Z-Score
+# O ponto de corte √© dado pelo pr√≥prio modelo de Altman (2005)
 #----------------------------------------------------------------------------------------------
 
-mydata$dZSCORE[mydata$ZSCOREw>=4.15]=0 #menor risco de insolvÍncia
-mydata$dZSCORE[mydata$ZSCOREw<4.15]=1 #maior risco de insolvÍncia
+mydata$dZSCORE[mydata$ZSCOREw>=4.15]=0 #menor risco de insolv√™ncia
+mydata$dZSCORE[mydata$ZSCOREw<4.15]=1 #maior risco de insolv√™ncia
 
 #-----------------------------------------------
-#selecionando as vari·veis winsorizadas e dummy ZSCORE
+#selecionando as vari√°veis winsorizadas e dummy ZSCORE
 #-----------------------------------------------
 
 mydatafin=dplyr::select(mydata, c(1:2, 25:36))
 
 #-----------------------------------------------
-#EstatÌstica descritiva
+#Estat√≠stica descritiva
 #----------------------------------------------
 unique(mydatafin$PREFIXO) #quantidade de empresas na amostra
 
@@ -197,7 +197,7 @@ summary(mydatafin)
 sd(mydatafin$VAICw);sd(mydatafin$TAMw);sd(mydatafin$ROAw);sd(mydatafin$ALAVw);sd(mydatafin$LIQCw);sd(mydatafin$GIROw);sd(mydatafin$CGATw);sd(mydatafin$FCDTw);sd(mydatafin$FCVw)
 
 #-----------------------------------------------
-#CorrelaÁ„o entre as vari·veis
+#Correla√ß√£o entre as vari√°veis
 #-----------------------------------------------
 cormydatafin=mydatafin[,3:11]
 p=rcorr(as.matrix(cormydatafin));p
@@ -245,18 +245,18 @@ df.kmeans
   
 set.seed(1)
 #-----------------------------------------------
-#ZSCORE EMPRESAS COM MAIOR RISCO DE INSOLV NCIA
+#ZSCORE EMPRESAS COM MAIOR RISCO DE INSOLV√äNCIA
 #-----------------------------------------------
 
 ZSCORE=mydatafin%>%filter(mydatafin$dZSCORE==1)
 
 #-----------------------------------------------
-#Download de planilha excel, quando necess·rio
+#Download de planilha excel, quando necess√°rio
 #write.xlsx(as.data.frame(ZSCORE), file="zscore.xlsx")
 #-----------------------------------------------
 
 #-----------------------------------------------
-#GERA«√O DA NUVEM DE PALAVRAS - Z-SCORE
+#GERA√á√ÉO DA NUVEM DE PALAVRAS - Z-SCORE
 #-----------------------------------------------
 
 aux=ZSCORE$PREFIXO
@@ -264,13 +264,13 @@ auxCorpus <- Corpus(VectorSource(aux))
 wordcloud(auxCorpus,max.words=110,scale = c(4, 0.3),random.order=F, color=wes_palette("Darjeeling1"), rot.per = 0.7)
 
 #-----------------------------------------------
-#KMEANS EMPRESAS COM MAIOR RISCO DE INSOLV NCIA
+#KMEANS EMPRESAS COM MAIOR RISCO DE INSOLV√äNCIA
 #-----------------------------------------------
 
 KMEANS=mydatafin%>%filter(mydatafin$ROAKM==1)
 
 #-----------------------------------------------
-#GERA«√O DA NUVEM DE PALAVRAS - KMEANS
+#GERA√á√ÉO DA NUVEM DE PALAVRAS - KMEANS
 #-----------------------------------------------
 
 aux=KMEANS$PREFIXO
@@ -278,12 +278,12 @@ auxCorpus <- Corpus(VectorSource(aux))
 wordcloud(auxCorpus,max.words=110,scale = c(4, 0.3),random.order=F, color=wes_palette("Darjeeling1"), rot.per = 0.7)
 
 #-----------------------------------------------
-#Download de planilha excel, quando necess·rio
+#Download de planilha excel, quando necess√°rio
 #write.xlsx(as.data.frame(KMEANS), file="KMEANS.xlsx")
 #-----------------------------------------------
 
 #-----------------------------------------------
-#   SEPARA«√O - TREINAMENTO/TESTE DPROA
+#   SEPARA√á√ÉO - TREINAMENTO/TESTE DPROA
 #-----------------------------------------------
 set.seed(1)
 divisao=sample.split(mydatafin$ROAKM,SplitRatio = 0.75)
@@ -293,7 +293,7 @@ treinamento$ROAKM=as.factor(treinamento$ROAKM);teste$ROAKM=as.factor(teste$ROAKM
 mettreinamento=treinamento[,c(3:11,15)];metteste=teste[,c(3:11,15)];
 
 #-----------------------------------------------
-#APLICA«√O KNN (K-Nearest Neighbor, ou K Vizinhos Mais PrÛximos)
+#APLICA√á√ÉO KNN (K-Nearest Neighbor, ou K Vizinhos Mais Pr√≥ximos)
 #-----------------------------------------------
 
 ctrl <- trainControl(method="repeatedcv",
@@ -317,7 +317,7 @@ plot.roc(rocobject)
 auc(rocobject)
 
 #-----------------------------------------------
-#     OUTRAS M…TRICAS DE AVALIA«√O - KNN
+#     OUTRAS M√âTRICAS DE AVALIA√á√ÉO - KNN
 #-----------------------------------------------
 
 predicttest=as.numeric(knnclass);
@@ -327,7 +327,7 @@ MAE(predicttest,original)
 RMSE(predicttest,original)
 
 #-----------------------------------------------
-#                 APLICA«√O - Naive bayes
+#                 APLICA√á√ÉO - Naive bayes
 #-----------------------------------------------
 
 set.seed(1)
@@ -349,7 +349,7 @@ rocobject=roc(metteste$ROAKM, nbclassprob[,2])
 plot.roc(rocobject)
 
 #-----------------------------------------------
-#      OUTRAS M…TRICAS DE AVALIA«√O - Naive Bayes
+#      OUTRAS M√âTRICAS DE AVALIA√á√ÉO - Naive Bayes
 #-----------------------------------------------
 
 auc(rocobject)
@@ -361,7 +361,7 @@ MAE(predicttest,original)
 RMSE(predicttest,original)
 
 #-----------------------------------------------
-#                 APLICA«√O - Logit
+#                 APLICA√á√ÉO - Logit
 #-----------------------------------------------
 set.seed(1)
 fitlogit=glm(ROAKM ~ ., data=mettreinamento, family="binomial")
@@ -379,7 +379,7 @@ logitrocobject=roc(metteste$ROAKM, logitclassprob[,2])
 plot.roc(logitrocobject)
 
 #-----------------------------------------------
-#      OUTRAS M…TRICAS DE AVALIA«√O - Logit
+#      OUTRAS M√âTRICAS DE AVALIA√á√ÉO - Logit
 #-----------------------------------------------
 
 plot(varImp(Fitlogit))
@@ -392,7 +392,7 @@ MAE(predicttest,original)
 RMSE(predicttest,original)
 
 #-----------------------------------------------
-#                 APLICA«√O - Random Forest
+#                 APLICA√á√ÉO - Random Forest
 #-----------------------------------------------
 set.seed(1)
 ctrl=trainControl(method="cv",
@@ -413,7 +413,7 @@ plot.roc(RFrocobject)
 plot(varImp(FitRF))
 
 #-----------------------------------------------
-#      OUTRAS M…TRICAS DE AVALIA«√O - Random Forest
+#      OUTRAS M√âTRICAS DE AVALIA√á√ÉO - Random Forest
 #-----------------------------------------------
 
 auc(RFrocobject)
@@ -425,7 +425,7 @@ MAE(predicttest,original)
 RMSE(predicttest,original)
 
 #-----------------------------------------------
-#           APLICA«√O - Support Vector Machines
+#           APLICA√á√ÉO - Support Vector Machines
 #-----------------------------------------------
 
 #-----------------------------------------------
@@ -441,7 +441,7 @@ SVMrocobject=roc(metteste$ROAKM,as.numeric(SVMclassprobradial))
 plot.roc(SVMrocobject)
 
 #-----------------------------------------------
-#      OUTRAS M…TRICAS DE AVALIA«√O - SVM Radial
+#      OUTRAS M√âTRICAS DE AVALIA√á√ÉO - SVM Radial
 #-----------------------------------------------
 
 auc(SVMrocobject)
@@ -467,7 +467,7 @@ SVMrocobject=roc(metteste$ROAKM,as.numeric(SVMclassprobpolinomial))
 plot.roc(SVMrocobject)
 
 #-----------------------------------------------
-#      OUTRAS M…TRICAS DE AVALIA«√O - SVM Polinomial
+#      OUTRAS M√âTRICAS DE AVALIA√á√ÉO - SVM Polinomial
 #-----------------------------------------------
 
 auc(SVMrocobject)
@@ -490,7 +490,7 @@ SVMrocobject=roc(metteste$ROAKM,as.numeric(SVMclassproblinear))
 plot.roc(SVMrocobject)
 
 #-----------------------------------------------
-#      OUTRAS M…TRICAS DE AVALIA«√O - SVM Linear
+#      OUTRAS M√âTRICAS DE AVALIA√á√ÉO - SVM Linear
 #-----------------------------------------------
 
 auc(SVMrocobject)
@@ -502,7 +502,7 @@ MAE(predicttest,original)
 RMSE(predicttest,original)
 
 #-----------------------------------------------
-#           APLICA«√O - Bagged Model
+#           APLICA√á√ÉO - Bagged Model
 #-----------------------------------------------
 
 set.seed(1)
@@ -527,7 +527,7 @@ baggedrocobject=roc(metteste$ROAKM, baggedclassprob[,2])
 plot.roc(baggedrocobject)
 
 #-----------------------------------------------
-#      OUTRAS M…TRICAS DE AVALIA«√O - Bagged Model
+#      OUTRAS M√âTRICAS DE AVALIA√á√ÉO - Bagged Model
 #-----------------------------------------------
 
 auc(baggedrocobject)
@@ -540,7 +540,7 @@ RMSE(predicttest,original)
 
 set.seed(1)
 #-----------------------------------------------
-#           APLICA«√O - boosted trees
+#           APLICA√á√ÉO - boosted trees
 #-----------------------------------------------
 
 tc = trainControl(method = "cv", 
@@ -558,7 +558,7 @@ boostedrocobject=roc(metteste$ROAKM, boostedclassprob[,2])
 plot.roc(boostedrocobject)
 
 #-----------------------------------------------
-#      OUTRAS M…TRICAS DE AVALIA«√O - boosted trees
+#      OUTRAS M√âTRICAS DE AVALIA√á√ÉO - boosted trees
 #-----------------------------------------------
 
 auc(boostedrocobject)
@@ -570,7 +570,7 @@ MAE(predicttest,original)
 RMSE(predicttest,original)
 
 #-----------------------------------------------
-#         COMPARA«√O DE MODELOS COM O ROC
+#         COMPARA√á√ÉO DE MODELOS COM O ROC
 #-----------------------------------------------
 
 # List of predictions
